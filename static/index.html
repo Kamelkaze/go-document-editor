@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <span>Make request in the form of http://localhost:8080/$command, where $command could be: 'new', 'update', 'read', or 'delete'. <br>
+            The commands 'update', 'read', and 'delete' require a url parameter named title e.g.: new?title=document1. <br>
+            The 'new' command requires a payload in the form specified. <br>
+            When using the 'update' command the payload should include those fields which are to be updated (in the form specified), with thier new values. Exluded fields will not be changed. <br>
+        So to create a new document,:http://localhost:8080/new + payload<br>
+        To delete a document: http://localhost:8080/delete?title=doc25 </span>
+    </body>
+</html>
