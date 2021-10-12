@@ -1,9 +1,11 @@
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{
+ --data '{
+"title": '"$2"',
 "content": {
-"data": "I dont agree"
+"header": '"$3"',
+"data": '"$4"'
 },
-"signee": "Aragorn"
+"signee": '"$5"'
 }' \
-  http://localhost:8080/update?title=doc3
+  http://localhost:8080/update?title=$1

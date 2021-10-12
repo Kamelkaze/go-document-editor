@@ -1,0 +1,6 @@
+newDocument: arg1=title, arg2=header, arg3=text, arg4=signee
+readDocument: arg1=title of document
+deleteDocument: arg1=title of document
+updateDocument: arg1=old title, arg2=title, arg3=header, arg4=text, arg5=signee
+
+Remember to quote the payload values unless they are null.

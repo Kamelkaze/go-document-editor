@@ -35,6 +35,10 @@ func main() {
 		}
 	}
 	routeSetup()
+	err := os.MkdirAll(DOCUMENT_FOLDER, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
 	strPort := ":" + strconv.Itoa(port)
 	log.Fatal(http.ListenAndServe(strPort, nil))
 }
@@ -58,19 +62,12 @@ func writeToFile(payload Payload, fileName string) error {
 	return os.WriteFile(DOCUMENT_FOLDER+fileName, jsonPayload, 0777)
 }
 
-//I use handlers to extract as many dependencies as I can (IO, extracting json)
-//so that I can focus on testing the parts of the code where most of the logic is
-//without having to do a lot of mocking.
-//There are certainly good arguments for testing these handlers as well,
-//or simply mocking all dependencies, but a bit overkill for this task I think.
-
 func newDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	fileNames, err := getExistingFileNames()
 	if err != nil {
 		serverErrorResponse(w, err)
 		return
 	}
-	//Don't test
 	payload, err := extractPayload(r.Body)
 	if err != nil {
 		clientErrorResponse(w, err)
@@ -89,7 +86,7 @@ func readDocumentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateDocumentHandler(w http.ResponseWriter, r *http.Request) {
-	oldDocument, _, err := getDocumentByUrl(r.URL)
+	oldDocument, title, err := getDocumentByUrl(r.URL)
 	if err != nil {
 		clientErrorResponse(w, err)
 		return
@@ -97,7 +94,7 @@ func updateDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	var oldContents Payload
 	err = json.Unmarshal(oldDocument, &oldContents)
 	if err != nil {
-		clientErrorResponse(w, err)
+		clientErrorResponse(w, errors.New("existing document is incorrectly formatted, unable to read"))
 		return
 	}
 	newContents, err := extractPayload(r.Body)
@@ -106,7 +103,7 @@ func updateDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updatedContents := updateDocumentContents(oldContents, newContents)
-	updateDocument(w, os.Remove, writeToFile, *oldContents.Title, updatedContents)
+	updateDocument(w, os.Remove, writeToFile, title, updatedContents)
 }
 
 func deleteDocumentHandler(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +136,6 @@ func extractPayload(body io.ReadCloser) (payload Payload, err error) {
 	return payload, nil
 }
 
-//Test
 func createNewDocument(w http.ResponseWriter, payload Payload, writeContentToFile FileWriter, fileNames []string) {
 	if payload.Title == nil {
 		clientErrorResponse(w, errors.New("No title found"))
@@ -152,33 +148,28 @@ func createNewDocument(w http.ResponseWriter, payload Payload, writeContentToFil
 			return
 		}
 	}
-	//Don't test
 	err := writeContentToFile(payload, *payload.Title)
 	if err != nil {
 		serverErrorResponse(w, err)
 	}
 }
 
-//Test
 func readDocument(w http.ResponseWriter, document []byte) {
 	fmt.Fprint(w, string(document))
 }
 
-//Test
 func updateDocument(w http.ResponseWriter, removeDocument DocumentRemover, writeContentToFile FileWriter, oldTitle string, updatedContent Payload) {
-	err := removeDocument(oldTitle)
+	err := removeDocument(DOCUMENT_FOLDER + oldTitle)
 	if err != nil {
 		serverErrorResponse(w, err)
 		return
 	}
-	//Dont test
 	err = writeContentToFile(updatedContent, *updatedContent.Title)
 	if err != nil {
 		serverErrorResponse(w, err)
 	}
 }
 
-//Test
 func updateDocumentContents(oldContents, newContents Payload) (updatedContents Payload) {
 	updatedContents.Title = oldContents.Title
 	if newContents.Title != nil {
@@ -203,7 +194,6 @@ func updateDocumentContents(oldContents, newContents Payload) (updatedContents P
 	return updatedContents
 }
 
-//Test
 func deleteDocument(w http.ResponseWriter, title string, removeDocument DocumentRemover) {
 	err := removeDocument(DOCUMENT_FOLDER + title)
 	if err != nil {
@@ -211,7 +201,6 @@ func deleteDocument(w http.ResponseWriter, title string, removeDocument Document
 	}
 }
 
-//Don't need to test
 func getDocumentByUrl(url *url.URL) ([]byte, string, error) {
 	title, err := getTitleFromUrl(url)
 	if err != nil {
@@ -226,7 +215,6 @@ func getDocumentByUrl(url *url.URL) ([]byte, string, error) {
 	return document, title, nil
 }
 
-//Don't test
 func getTitleFromUrl(url *url.URL) (string, error) {
 	title := url.Query().Get("title")
 	if title == "" {

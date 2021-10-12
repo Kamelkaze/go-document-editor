@@ -1,12 +1,12 @@
 curl --header "Content-Type: application/json" \
   --request POST \
   --data '{
-"title": "doc3",
+"title": '"$1"',
 "content": {
-"header": "Employee contract",
-"data": "I agree to the terms"
+"header": '"$2"',
+"data": '"$3"'
 },
-"signee": "John McClane"
+"signee": '"$4"'
 }' \
   http://localhost:8080/new
 
