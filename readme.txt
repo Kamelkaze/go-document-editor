@@ -1,4 +1,4 @@
-To start the server run "go run main", the server will listen on port 8080 by default.
+To start the server run "go run main.go", the server will listen on port 8080 by default.
 You can specify port by providing a port number e.g. "go run main 8000".
 
 The curl folder contains useful scripts for using the program. Check info.txt for information about which arguments needs to be passed to each script.
@@ -9,3 +9,7 @@ The commands 'update', 'read', and 'delete' require a url parameter named title 
 To run the tests run "go test".
 
 Regarding the testing I used the handlers (eg. newDocumentsHandler) to extract as many dependencies as I could (io, json, url) so that we can focus on testing without being dependant on externalities. In this case the unit tests become somwhat trivial since there isn't much logic in the application. There are certainly good arguments for testing these handlers as well, or simply mocking all of the dependencies, but a bit overkill for this task I think.
+
+There are some limitations regarding title name. The title of the document is set as the filename, so you can't use characters that your OS does not allow in filenames. You also cannot have two documents with the same title. 
+
+Another limiations is that the documents are expected to be created and edited only by the program, so there are no guarantees about what could happen if you manually edit them.

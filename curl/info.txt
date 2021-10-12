@@ -3,4 +3,5 @@ readDocument: arg1=title of document
 deleteDocument: arg1=title of document
 updateDocument: arg1=old title, arg2=title, arg3=header, arg4=text, arg5=signee
 
-Remember to quote the payload values unless they are null.
+Use \" \" or '" "' around each argument unless they are null, eg 
+./newDocument '"Document1"' \"Important\" null null  
